@@ -54,7 +54,8 @@ public:
 	struct pivot_type {
 		enum {
 			BKP, 
-			ROOK
+			ROOK,
+			NONE
 		};
 	};
 	
@@ -376,6 +377,7 @@ public:
 		\param sym flags whether the matrix is symmetric or not.
 	*/
 	bool save(std::string filename, bool sym = false);
+	bool save_with_diag(std::string filename, elt_vector_type D, bool sym = false);
 
 };
 

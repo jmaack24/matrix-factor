@@ -150,7 +150,7 @@ class solver {
 		*/
 		solver() {
 			msg_lvl = message_level::STATISTICS;
-            		piv_type = pivot_type::ROOK;
+			piv_type = pivot_type::ROOK;
 			reorder_type = reordering_type::AMD;
 			equil_type = equilibration_type::BUNCH;
 			solve_type = solver_type::SQMR;
@@ -254,6 +254,8 @@ class solver {
                 piv_type = pivot_type::ROOK;
             } else if (strcmp(pivot, "bunch") == 0) {
                 piv_type = pivot_type::BKP;
+            } else if (strcmp(pivot, "none") == 0) {
+                piv_type = pivot_type::NONE;
             }
 		}
 
@@ -327,6 +329,8 @@ class solver {
                 pivot_name = "BK";
             } else if (piv_type == pivot_type::ROOK) {
                 pivot_name = "Rook";
+            } else if (piv_type == pivot_type::NONE) {
+                pivot_name = "None";
             }
             
 			if (msg_lvl) printf("  Factorization (%s pivoting):\t%.3f seconds.\n", pivot_name.c_str(), dif/CLOCKS_PER_SEC);
@@ -447,6 +451,14 @@ class solver {
 			
 			The names of the output matrices follow the format out{}.mtx, where {} describes what the file contains (i.e. A, L, or D).
 		*/
+	void save_file(std::string fname) {
+			if (msg_lvl) cout << "Saving factorization ..." << endl;
+            if (!perform_inplace) {
+                L.save_with_diag(fname, D.main_diag, false);
+            } else {
+                A.save(fname, false);
+            }
+		};
 		void save() { // TODO: refactor this as a "save factors" method
 			if (msg_lvl) cout << "Saving matrices..." << endl;
             if (!perform_inplace) {

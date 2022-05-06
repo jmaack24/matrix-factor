@@ -295,7 +295,12 @@ void lilc_matrix<el_type> :: ildl(lilc_matrix<el_type>& L, block_diag_matrix<el_
                 }
             }
             //--------------end rook pivoting--------------//
-        }
+
+        } else if (piv_type == pivot_type::NONE) {
+            //--------------begin no pivoting--------------//
+            i = k;
+            work[k] = d1;
+		}
 
 		//erase diagonal element from non-zero indices (to exclude it from being dropped)
 		curr_nnzs.erase(std::remove(curr_nnzs.begin(), curr_nnzs.end(), k), curr_nnzs.end());
@@ -360,10 +365,11 @@ void lilc_matrix<el_type> :: ildl(lilc_matrix<el_type>& L, block_diag_matrix<el_
 		count++;
 		
 		if (!size_two_piv) {
-			if ( abs(D[k]) < eps) D[k] = 1e-6; //statically pivot
+			double EPS = 1.e-16;
+			if ( abs(D[k]) < EPS) D[k] = EPS; //statically pivot
 			i = 1;
 			for (idx_it it = curr_nnzs.begin(); it != curr_nnzs.end(); it++) { 
-				if ( abs(work[*it]) > eps) {
+				if ( abs(work[*it]) > EPS) {
 					L.m_idx[k][i] = *it; //col k nonzero indices of L are stored
 					L.m_x[k][i] = work[*it]/D[k]; //col k nonzero values of L are stored
 

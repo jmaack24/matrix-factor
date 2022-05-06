@@ -286,6 +286,11 @@ void lilc_matrix<el_type> :: ildl_inplace(block_diag_matrix<el_type>& D, idx_vec
                 }
             }
             //--------------end rook pivoting--------------//
+
+        } else if (piv_type == pivot_type::NONE) {
+            //--------------begin no pivoting--------------//
+            i = k;
+            work[k] = d1;
         }
         
 		//erase diagonal element from non-zero indices (to exclude it from being dropped)

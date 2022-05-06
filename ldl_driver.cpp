@@ -20,7 +20,7 @@ DEFINE_double(pp_tol, 1.0, "A parameter to aggressiveness of Bunch-Kaufman pivot
 		"BKP in a continuous manner.");
 
 DEFINE_string(pivot, "rook", "Determines what kind of pivoting algorithm will be used"
-		" during the factorization. Choices are 'rook' and 'bunch'. The default is 'rook'.");
+		" during the factorization. Choices are 'rook', 'bunch' and 'none'. The default is 'rook'.");
 
 DEFINE_string(reordering, "amd", "Determines what sort of preordering will be used"
 		" on the matrix. Choices are 'amd', 'rcm', and 'none'.");
@@ -35,6 +35,9 @@ DEFINE_bool(inplace, false, "Decides if the matrix should be factored in place (
 DEFINE_bool(save, true, "If yes, saves the factors (in matrix-market format) into a folder "
 		"called output_matrices/ in the same directory as ldl_driver.");
 
+DEFINE_string(save_ildl_file, "", "If supplied, it saves the ILDL factorization (in matrix-market format) "
+			  "to the file name supplied");
+
 #ifdef SYM_ILDL_DEBUG
 DEFINE_bool(display, false, "If yes, outputs a human readable version of the factors onto"
 		" standard out. Generates a large amount of output if the "
@@ -48,7 +51,7 @@ DEFINE_int32(max_iters, -1, "If >= 0 and supplied with a right hand side, SYM-IL
 
 DEFINE_string(solver, "sqmr", "The solver used if supplied a right-hand side. The "
 		"solution will be written to output_matrices/ in matrix-market "
-		"format. Choices are 'sqmr', 'minres', and 'full'");
+		"format. Choices are 'sqmr', 'minres', 'full', and none.");
 
 DEFINE_double(solver_tol, 1e-6, "A tolerance for the iterative solver used. When the iterate x satisfies ||Ax-b||/||b|| < solver_tol, the solver is terminated. Has no effect when doing a full solve.");
 
@@ -110,8 +113,13 @@ int main(int argc, char* argv[])
 
 	solv.set_pivot(FLAGS_pivot.c_str());
 	solv.set_inplace(FLAGS_inplace);
+
 	solv.solve(FLAGS_fill, FLAGS_tol, FLAGS_pp_tol, FLAGS_max_iters, FLAGS_solver_tol);
 
+	if (strcmp(FLAGS_save_ildl_file.c_str(), "") != 0) {
+		solv.save_file(FLAGS_save_ildl_file);
+	}
+	
 	if (FLAGS_save) {
 		solv.save();
 	}
