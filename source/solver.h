@@ -405,25 +405,11 @@ class solver {
 							D.sqrt_solve(sol_vec, tmp, true);
 							L.forwardsolve(tmp, sol_vec);
 						} else if (solve_type == solver_type::FGMRES) {
-							// finally, since we're preconditioning with M = L|D|^(1/2), we have
-							// to multiply M^(-1) to the rhs and solve the system
-							// M^(-1) * B * M'^(-1) y = M^(-1)P'*S*b
-							L.backsolve(rhs, tmp);
-							D.sqrt_solve(tmp, rhs, false);
-							
 							if (msg_lvl) printf("Solving matrix with FGMRES...\n");
-							// solve the equilibrated, preconditioned, and permuted linear system
+							
+
 							fgmres(max_iter, kdim, minres_tol);
-							
-							// now we've solved M^(-1)*B*M'^(-1)y = M^(-1)P'*S*b
-							// where B = P'SASPy.
-							
-							// but the actual solution is y = M' * P'S^(-1)*x
-							// so x = S*P*M'^(-1)*y
-							
-							// 0. apply M'^(-1)
-							D.sqrt_solve(sol_vec, tmp, true);
-							L.forwardsolve(tmp, sol_vec);
+
 						} else if (solve_type == solver_type::SQMR) {
 							if (msg_lvl) printf("Solving matrix with SQMR...\n");
 							sqmr(max_iter, minres_tol);
@@ -444,14 +430,7 @@ class solver {
                     if (msg_lvl) printf("Solve time:\t%.3f seconds.\n", dif/CLOCKS_PER_SEC);
                     if (msg_lvl) printf("\n");
         
-		if (save_sol) {            
-                    // save results
-                    // TODO: refactor this to be in its own method
-                    if (msg_lvl) printf("Solution saved to output_matrices/outsol.mtx.\n");
-                    save_vector(sol_vec, "output_matrices/outsol.mtx");
-                }
-
-		}
+				}
 			}
 		}
 		

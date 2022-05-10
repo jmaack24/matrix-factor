@@ -49,8 +49,11 @@ void solver<el_type, mat_type> :: fgmres(int max_iter, int kdim, double tol) {
 
 	el_type norm_rhs = norm(rhs, 2.0);
 
-	vector< vector<el_type> > vv(kdim_p1, vector<el_type>(n));
-	vector< vector<el_type> > z(kdim, vector<el_type>(n));
+    vector<el_type> tmp1(n);
+    vector<el_type> tmp2(n);
+
+    vector< vector<el_type> > vv(kdim_p1, vector<el_type>(n));
+    vector< vector<el_type> > z(kdim, vector<el_type>(n));
 	//vv = (double *)malloc(kdim_p1*n*sizeof(double));
 	//z  = (double *)malloc(kdim*n*sizeof(double));
 	kdim_p1 = kdim+1;
@@ -89,10 +92,9 @@ void solver<el_type, mat_type> :: fgmres(int max_iter, int kdim, double tol) {
 			/*------------------------------------------------------------
 			  |  (Right) Preconditioning Operation   z_{j} = M^{-1} v_{j}
 			  +-----------------------------------------------------------*/
-			//if (lu == NULL)
-			//memcpy(z+pti, vv+pti, n*sizeof(double));
-			//else
-			//	lu->precon(vv+pti, z+pti, lu) ;
+			L.backsolve(vv[i], tmp1);
+            D.solve(tmp1, tmp2);
+            L.forwardsolve(tmp2, z[i]);
 
 			/*-------------------- matvec operation w = A z_{j} = A M^{-1} v_{j} */
 			A.multiply(z[i], vv[i1]);
@@ -138,6 +140,7 @@ void solver<el_type, mat_type> :: fgmres(int max_iter, int kdim, double tol) {
 			hh[ptih+i] = c[i]*hh[ptih+i] + s[i]*hh[ptih+i1];
 			beta = fabs(rs[i1]);
 			/*-------------------- end [inner] while loop [Arnoldi] */
+			printf("iter %d, relative residual %e.\n", its, beta/norm_rhs);
 		}
 		/*-------------------- now compute solution. 1st, solve upper
 		  triangular system*/
@@ -164,10 +167,20 @@ void solver<el_type, mat_type> :: fgmres(int max_iter, int kdim, double tol) {
 	//free(z);
 	free(hh);
 
+	A.multiply(sol_vec, tmp1);
+	for (j=0; j<n; j++)
+		tmp2[j] = rhs[j] - tmp1[j];
+	el_type norm_num = DNRM2(n,tmp2,one);
+	el_type norm_x = DNRM2(n,sol_vec,one);
+	el_type norm_A = A.fronorm();
+	el_type norm_b = norm_rhs;
+	el_type norm_den = norm_b + norm_A*norm_x;
+	el_type nrbe = norm_num/norm_den;
+
     std::string iter_str = "iterations";
     if (k-1 == 1) iter_str = "iteration";
 
-	if (msg_lvl) printf("FGMRES took %i %s and got down to relative residual %e.\n", k-1, iter_str.c_str(), beta/norm_rhs);
+	if (msg_lvl) printf("FGMRES took %i %s and got down to relative residual %e nrbe %e\n", its, iter_str.c_str(), beta/norm_rhs, nrbe);
 	return;
 }
 

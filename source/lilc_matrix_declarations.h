@@ -226,7 +226,23 @@ public:
 			}
 		}
 	}
-	
+
+	el_type fronorm() {
+		el_type res=0.;
+		for (int i = 0; i < m_n_cols; i++) {
+			//printf("column=%d : ",i);
+			for (int k = 0; k < m_idx[i].size(); k++) {
+				if (i!=m_idx[i][k])
+					res += 2*m_x[i][k]*m_x[i][k];
+				else
+					res += m_x[i][k]*m_x[i][k];
+				//printf("%d ",m_idx[i][k]);
+			}
+			//printf("\n");
+		}
+		res = std::sqrt(res);
+		return res;
+	}
 	/*! \brief Performs a forward solve of this matrix, assuming that it is upper triangular (stored row major).
 		
 		\param b the right hand side.
