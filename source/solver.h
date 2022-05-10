@@ -141,7 +141,7 @@ class solver {
 		bool has_rhs; ///<Set to true if we have a right hand side that we expect to solve.
 		bool perform_inplace; ///<Set to true if we are factoring the matrix A inplace.
        		// TODO: refactor this away
-		bool save_sol; ///<Set to true if we want to save the solution to a file.
+		bool save_sol=true; ///<Set to true if we want to save the solution to a file.
 		 
         vector<el_type> rhs; ///<The right hand side we'll solve for.
 		vector<el_type> sol_vec; ///<The solution vector.
@@ -154,8 +154,8 @@ class solver {
 			reorder_type = reordering_type::AMD;
 			equil_type = equilibration_type::BUNCH;
 			solve_type = solver_type::SQMR;
-            		has_rhs = false;
-            		perform_inplace = false;
+			has_rhs = false;
+			perform_inplace = false;
 		}
 				
 		/*! \brief Loads the matrix A into solver. A must be of matrix market format.
@@ -459,7 +459,7 @@ class solver {
                 A.save(fname, false);
             }
 		};
-		void save() { // TODO: refactor this as a "save factors" method
+	void save() { // TODO: refactor this as a "save factors" method
 			if (msg_lvl) cout << "Saving matrices..." << endl;
             if (!perform_inplace) {
                 A.save("output_matrices/outB.mtx", true);
@@ -474,7 +474,35 @@ class solver {
 			D.save("output_matrices/outD.mtx");
 			if (msg_lvl) cout << "Save complete." << endl;
 		}
-		
+
+	void save_to_dir(std::string sdir) { // TODO: refactor this as a "save factors" method
+			if (msg_lvl) cout << "Saving matrices..." << endl;
+			char path[250];
+            if (!perform_inplace) {
+				sprintf(path,"%s/outB.mtx",sdir.c_str());
+                A.save(std::string(path), true);
+				sprintf(path,"%s/outL.mtx",sdir.c_str());
+                L.save(std::string(path), false);
+            } else {
+				sprintf(path,"%s/outL.mtx",sdir.c_str());
+                A.save(std::string(path), false);
+            }
+
+			sprintf(path,"%s/outS.mtx",sdir.c_str());
+			A.S.save(std::string(path));
+
+			sprintf(path,"%s/outP.mtx",sdir.c_str());
+			save_vector(perm, std::string(path));
+
+			sprintf(path,"%s/outP.mtx",sdir.c_str());
+			D.save(std::string(path));
+
+			sprintf(path,"%s/outsol.mtx",sdir.c_str());
+			save_vector(sol_vec, std::string(path));
+
+			if (msg_lvl) cout << "Save complete." << endl;
+		}
+
 		/*! \brief Prints the L and D factors to stdout.
 		*/
 		void display() {

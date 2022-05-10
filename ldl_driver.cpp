@@ -35,6 +35,8 @@ DEFINE_bool(inplace, false, "Decides if the matrix should be factored in place (
 DEFINE_bool(save, true, "If yes, saves the factors (in matrix-market format) into a folder "
 		"called output_matrices/ in the same directory as ldl_driver.");
 
+DEFINE_string(save_dir, "", "If supplied, files are supplied to this directory");
+
 DEFINE_string(save_ildl_file, "", "If supplied, it saves the ILDL factorization (in matrix-market format) "
 			  "to the file name supplied");
 
@@ -119,9 +121,16 @@ int main(int argc, char* argv[])
 	if (strcmp(FLAGS_save_ildl_file.c_str(), "") != 0) {
 		solv.save_file(FLAGS_save_ildl_file);
 	}
-	
+
 	if (FLAGS_save) {
-		solv.save();
+		if (strcmp(FLAGS_save_dir.c_str(), "") != 0) {
+			solv.save_to_dir(FLAGS_save_dir);
+			std::cout << "All output written to " << FLAGS_save_dir << " directory.";
+		}
+		else {
+			solv.save();
+			std::cout << "All output written to /output_matrices directory.";
+		}
 	}
 
 #ifdef SYM_ILDL_DEBUG
@@ -133,7 +142,6 @@ int main(int argc, char* argv[])
 
 	std::cout << "Factorization Complete. ";
 	if (FLAGS_save) {
-		std::cout << "All output written to /output_matrices directory.";
 	}
 	std::cout << std::endl;
 
