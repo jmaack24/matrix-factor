@@ -14,6 +14,8 @@ DEFINE_double(fill, 3.0, "A parameter to control memory usage. Each column is gu
 DEFINE_double(tol, 0.001, "A parameter to control agressiveness of dropping. In each column k,"
 		"elements less than tol*||L(k+1:n,k)|| (1-norm) are dropped.");
 
+DEFINE_int32(kdim, 100, "FGMRES krylov space dimension");
+
 DEFINE_double(pp_tol, 1.0, "A parameter to aggressiveness of Bunch-Kaufman pivoting (BKP). "
 		"When pp_tol >= 1, full BKP is used. When pp_tol is 0, BKP is faster"
 		"but chooses poorer pivots. Values between 0 and 1 varies the aggressiveness of"
@@ -53,7 +55,7 @@ DEFINE_int32(max_iters, -1, "If >= 0 and supplied with a right hand side, SYM-IL
 
 DEFINE_string(solver, "sqmr", "The solver used if supplied a right-hand side. The "
 		"solution will be written to output_matrices/ in matrix-market "
-		"format. Choices are 'sqmr', 'minres', 'full', and none.");
+		"format. Choices are 'sqmr', 'minres', 'fgmres', 'full', and none.");
 
 DEFINE_double(solver_tol, 1e-6, "A tolerance for the iterative solver used. When the iterate x satisfies ||Ax-b||/||b|| < solver_tol, the solver is terminated. Has no effect when doing a full solve.");
 
@@ -116,7 +118,7 @@ int main(int argc, char* argv[])
 	solv.set_pivot(FLAGS_pivot.c_str());
 	solv.set_inplace(FLAGS_inplace);
 
-	solv.solve(FLAGS_fill, FLAGS_tol, FLAGS_pp_tol, FLAGS_max_iters, FLAGS_solver_tol);
+	solv.solve(FLAGS_fill, FLAGS_tol, FLAGS_pp_tol, FLAGS_max_iters, FLAGS_solver_tol, FLAGS_kdim);
 
 	if (strcmp(FLAGS_save_ildl_file.c_str(), "") != 0) {
 		solv.save_file(FLAGS_save_ildl_file);

@@ -33,6 +33,7 @@ struct solver_type {
 	enum {
 		NONE,
 		MINRES,
+		FGMRES,
 		SQMR,
 		FULL
 	};
@@ -220,6 +221,8 @@ class solver {
 		void set_solver(const char* solver) {
 			if (strcmp(solver, "minres") == 0) {
 				solve_type = solver_type::MINRES;
+			} else if (strcmp(solver, "fgmres") == 0) {
+				solve_type = solver_type::FGMRES;
 			} else if (strcmp(solver, "sqmr") == 0) {
 				solve_type = solver_type::SQMR;
 			} else if (strcmp(solver, "full") == 0) {
@@ -268,7 +271,7 @@ class solver {
 			\param pp_tol a factor controling the aggresiveness of Bunch-Kaufman pivoting.
 			\param max_iter the maximum number of iterations for minres (ignored if no right hand side).
 		*/
-		void solve(double fill_factor, double tol, double pp_tol, int max_iter = -1, double minres_tol = 1e-6, double shift = 0.0) {
+	void solve(double fill_factor, double tol, double pp_tol, int max_iter = -1, double minres_tol = 1e-6, int kdim = 100, double shift = 0.0) {
             // A full factorization is equivalent to a fill factor of n and tol of 0
             if (solve_type == solver_type::FULL) {
                 tol = 0.0;
@@ -401,6 +404,26 @@ class solver {
 							// 0. apply M'^(-1)
 							D.sqrt_solve(sol_vec, tmp, true);
 							L.forwardsolve(tmp, sol_vec);
+						} else if (solve_type == solver_type::FGMRES) {
+							// finally, since we're preconditioning with M = L|D|^(1/2), we have
+							// to multiply M^(-1) to the rhs and solve the system
+							// M^(-1) * B * M'^(-1) y = M^(-1)P'*S*b
+							L.backsolve(rhs, tmp);
+							D.sqrt_solve(tmp, rhs, false);
+							
+							if (msg_lvl) printf("Solving matrix with FGMRES...\n");
+							// solve the equilibrated, preconditioned, and permuted linear system
+							fgmres(max_iter, kdim, minres_tol);
+							
+							// now we've solved M^(-1)*B*M'^(-1)y = M^(-1)P'*S*b
+							// where B = P'SASPy.
+							
+							// but the actual solution is y = M' * P'S^(-1)*x
+							// so x = S*P*M'^(-1)*y
+							
+							// 0. apply M'^(-1)
+							D.sqrt_solve(sol_vec, tmp, true);
+							L.forwardsolve(tmp, sol_vec);
 						} else if (solve_type == solver_type::SQMR) {
 							if (msg_lvl) printf("Solving matrix with SQMR...\n");
 							sqmr(max_iter, minres_tol);
@@ -439,7 +462,14 @@ class solver {
 			\param shift shifts A by shift*(identity matrix) to make it more positive definite. This sometimes helps.
 		*/
 		void minres(int max_iter = 1000, double stop_tol = 1e-6, double shift = 0.0);
-		
+
+		/*! \brief Applies fgmres on A, preconditioning with factors L and D.
+			
+			\param max_iter the maximum number of fgmres iterations.
+			\param stop_tol the stopping tolerance of fgmres. i.e. we stop as soon as the residual goes below stop_tol.
+		*/
+        void fgmres(int max_iter = 1000, int kdim=1000, double stop_tol = 1e-6);
+	
 		/*! \brief Applies SMQR on A, preconditioning with factors L and D.
 			
 			\param max_iter the maximum number of minres iterations.
@@ -518,6 +548,7 @@ class solver {
 		}
 };
 
+#include "solver_fgmres.h"
 #include "solver_minres.h"
 #include "solver_sqmr.h"
 
