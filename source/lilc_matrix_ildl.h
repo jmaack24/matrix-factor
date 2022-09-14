@@ -16,6 +16,8 @@ void lilc_matrix<el_type> :: ildl(lilc_matrix<el_type>& L, block_diag_matrix<el_
 	int lfil;
 	if (fill_factor > 1e4) lfil = ncols; //just incase users decide to enter a giant fill factor for fun...
 	else lfil = 2*fill_factor*nnz()/ncols; //roughly a factor of 2 since only lower tri. of A is stored
+
+	cout << "lfil = " << lfil << "  tol = " << tol << std::endl;
 	
 	const el_type alpha = (1.0+sqrt(17.0))/8.0;  //for use in pivoting.
 	el_type w1(-1), wr(-1), d1(-1), dr(-1);		//for use in bk-pivoting
@@ -365,11 +367,11 @@ void lilc_matrix<el_type> :: ildl(lilc_matrix<el_type>& L, block_diag_matrix<el_
 		count++;
 		
 		if (!size_two_piv) {
-			double EPS = 1.e-16;
-			if ( abs(D[k]) < EPS) D[k] = EPS; //statically pivot
+		  // double EPS = 1.e-16;
+			if ( abs(D[k]) < eps) D[k] = eps; //statically pivot
 			i = 1;
 			for (idx_it it = curr_nnzs.begin(); it != curr_nnzs.end(); it++) { 
-				if ( abs(work[*it]) > EPS) {
+				if ( abs(work[*it]) > eps) {
 					L.m_idx[k][i] = *it; //col k nonzero indices of L are stored
 					L.m_x[k][i] = work[*it]/D[k]; //col k nonzero values of L are stored
 

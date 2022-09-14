@@ -169,7 +169,7 @@ struct by_tolerance {
 template <class el_type>
 inline void drop_tol(vector<el_type>& v, vector<int>& curr_nnzs, const int& lfil, const double& tol) { 
 	//determine dropping tolerance. all elements with value less than tolerance = tol * norm(v) is dropped.
-	el_type tolerance = tol*norm<el_type>(v, curr_nnzs, 2);
+	el_type tolerance = tol*norm<el_type>(v, curr_nnzs, 1);
 	const long double eps = 1e-13; //TODO: fix later. need to make this a global thing
 	if (tolerance > eps) {
 		for (idx_it it = curr_nnzs.begin(), end = curr_nnzs.end(); it != end; ++it) 
