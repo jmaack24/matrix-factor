@@ -279,7 +279,7 @@ class solver {
             }
             
 			perm.reserve(A.n_cols());
-			cout << std::fixed << std::setprecision(3);
+			cout << std::fixed << std::setprecision(9);
 			
 			double dif, total = 0;
 			clock_t start;
@@ -288,7 +288,7 @@ class solver {
 				start = clock();
 				A.sym_equil();
 				dif = clock() - start; total += dif; 
-				if (msg_lvl) printf("  Equilibration:\t\t%.3f seconds.\n", dif/CLOCKS_PER_SEC);
+				if (msg_lvl) printf("  Equilibration:\t\t%.9f seconds.\n", dif/CLOCKS_PER_SEC);
 			}
 
 			if (reorder_type != reordering_type::NONE) {
@@ -306,18 +306,20 @@ class solver {
 				}
 				
 				dif = clock() - start; total += dif;
-				if (msg_lvl) printf("  %s:\t\t\t\t%.3f seconds.\n", perm_name.c_str(), dif/CLOCKS_PER_SEC);
+				if (msg_lvl) printf("  %s:\t\t\t\t%.9f seconds.\n", perm_name.c_str(), dif/CLOCKS_PER_SEC);
 				
 				start = clock();
 				A.sym_perm(perm);
 				dif = clock() - start; total += dif;
-				if (msg_lvl) printf("  Permutation:\t\t\t%.3f seconds.\n", dif/CLOCKS_PER_SEC);
+				if (msg_lvl) printf("  Permutation:\t\t\t%.9f seconds.\n", dif/CLOCKS_PER_SEC);
 			} else {
 				// no permutation specified, store identity permutation instead.
 				for (int i = 0; i < A.n_cols(); i++) {
 					perm.push_back(i);
 				}
 			}
+
+			A.save("test_sym_eqpm.mtx");
 
 			start = clock();
             if (perform_inplace) {
@@ -336,8 +338,8 @@ class solver {
                 pivot_name = "None";
             }
             
-			if (msg_lvl) printf("  Factorization (%s pivoting):\t%.3f seconds.\n", pivot_name.c_str(), dif/CLOCKS_PER_SEC);
-			if (msg_lvl) printf("Total time:\t\t\t%.3f seconds.\n", total/CLOCKS_PER_SEC);
+			if (msg_lvl) printf("  Factorization (%s pivoting):\t%.9f seconds.\n", pivot_name.c_str(), dif/CLOCKS_PER_SEC);
+			if (msg_lvl) printf("Total time:\t\t\t%.9f seconds.\n", total/CLOCKS_PER_SEC);
             if (perform_inplace) {
                 if (msg_lvl) printf("L is %d by %d with %d non-zeros.\n", A.n_rows(), A.n_cols(), A.nnz() );
             } else {
@@ -427,7 +429,7 @@ class solver {
                         sol_vec[i] = A.S[i]*sol_vec[i];
                     }
                     dif = clock() - start;
-                    if (msg_lvl) printf("Solve time:\t%.3f seconds.\n", dif/CLOCKS_PER_SEC);
+                    if (msg_lvl) printf("Solve time:\t%.9f seconds.\n", dif/CLOCKS_PER_SEC);
                     if (msg_lvl) printf("\n");
         
 				}

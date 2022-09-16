@@ -387,7 +387,22 @@ public:
 		\param dim The dimension of the matrix.
 	*/	
 	bool load(const int* ptr, const int* row, const el_type* val, int dim);
-	
+
+        /*! \brief Loads a matrix in CSR format.
+		\param ptr A vector containing the ranges of indices in each row.
+		\param row A vector containing the col indices of the nnz.
+		\param val A vector containing the values of the non-zeros.
+	*/
+        bool load_csr(const std::vector<int>& ptr, const std::vector<int>& col, const std::vector<el_type>& val);
+
+	/*! \brief Loads a matrix in CSR format. Does no error checking on the input vectors.
+		\param ptr A vector containing the ranges of indices in each row.
+		\param row A vector containing the col indices of the nnz.
+		\param val A vector containing the values of the non-zeros.
+		\param dim The dimension of the matrix.
+	*/
+	bool load_csr(const int* ptr, const int* col, const el_type* val, int dim);
+
 	/*! \brief Saves a matrix in matrix market format.
 		\param filename the filename of the matrix to be saved. All matrices saved are in matrix market format (.mtx).
 		\param sym flags whether the matrix is symmetric or not.

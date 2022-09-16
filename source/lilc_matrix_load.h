@@ -133,4 +133,90 @@ bool lilc_matrix<el_type> :: load (const int* ptr, const int* row, const el_type
 	return true;
 }
 
+template<class el_type>
+bool lilc_matrix<el_type> :: load_csr (const std::vector<int>& ptr,
+				       const std::vector<int>& col,
+				       const std::vector<el_type>& val)
+{
+  if (ptr.size() == 0 || ptr.back() != col.size() || val.size() != ptr.back())
+    {
+      std::cout << "Error in CSR format detected. Matrix failed to load." << std::endl;
+      return false;
+    }
+  return load_csr(ptr.data(), col.data(), val.data(), ptr.size()-1);
+}
+
+template<class el_type>
+bool lilc_matrix<el_type> :: load_csr (const int* ptr,
+				       const int* col,
+				       const el_type* val,
+				       int dim)
+{
+  bool full_detected = false;
+  int n_rows = dim;
+  int n_cols = dim;
+
+  resize(n_rows, n_cols);
+  std::fill(row_first.begin(), row_first.end(), 0); //a bit of optimization could be used here since resize sets all elem in first to 1
+  std::fill(col_first.begin(), col_first.end(), 0); //a bit of optimization could be used here since resize sets all elem in first to 1
+
+  std::vector< std::vector< std::pair< int, el_type > > > rows_and_vals;
+
+  for (int i = 0; i < dim; ++i)
+    rows_and_vals.push_back(std::vector< std::pair< int, el_type > >());
+
+  int count = 0;
+  for (int i = 0; i < dim; i++)
+    {
+      for (int j = ptr[i]; j < ptr[i+1]; j++)
+	{
+	  if (i < col[j])
+	    {
+	      // Value above the diagonal...skip it...
+	      full_detected = true;
+	      continue;
+	    }
+
+	  rows_and_vals[col[j]].push_back(std::make_pair(i,val[j]));
+
+	  if (i != col[j])
+	    {
+	      list[i].push_back(col[j]);
+	    }
+
+	  ++count;
+	}
+    }
+
+  // Sort the values by row and put into class structures
+  for (int k = 0; k < dim; k++)
+    {
+      std::sort(rows_and_vals[k].begin(),
+		rows_and_vals[k].end(),
+		std::less< std::pair< int, double > >());
+      for (auto it = rows_and_vals[k].begin();
+	   it != rows_and_vals[k].end();
+	   ++it)
+	{
+	  m_idx[k].push_back(it->first);
+	  m_x[k].push_back(it->second);
+	}
+      // auto curr_rvs = rows_and_vals[k];
+      // std::sort(curr_rvs.begin(), curr_rvs.end());
+      // for (auto it = curr_rvs.begin(); it != curr_rvs.end(); ++it)
+      // 	{
+      // 	  m_idx[k].push_back(it->first);
+      // 	  m_x[k].push_back(it->second);
+      // 	}
+    }
+
+  if (full_detected)
+    {
+      std::cout << "Full matrix detected, assuming matrix is symmetric and loading lower-half of the matrix only." << std::endl;
+    }
+
+  nnz_count = count;
+  return true;
+}
+
 #endif
