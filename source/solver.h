@@ -505,7 +505,7 @@ class solver {
 			sprintf(path,"%s/outP.mtx",sdir.c_str());
 			save_vector(perm, std::string(path));
 
-			sprintf(path,"%s/outP.mtx",sdir.c_str());
+			sprintf(path,"%s/outD.mtx",sdir.c_str());
 			D.save(std::string(path));
 
 			sprintf(path,"%s/outsol.mtx",sdir.c_str());

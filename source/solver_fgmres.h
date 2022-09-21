@@ -141,6 +141,11 @@ void solver<el_type, mat_type> :: fgmres(int max_iter, int kdim, double tol) {
 			beta = fabs(rs[i1]);
 			/*-------------------- end [inner] while loop [Arnoldi] */
 			printf("iter %d, relative residual %e.\n", its, beta/norm_rhs);
+			/* printf("iter %d, beta %e, norm %e.\n", its, beta, norm_rhs); */
+			if(!isfinite(beta/norm_rhs))
+			  {
+			    return;
+			  }
 		}
 		/*-------------------- now compute solution. 1st, solve upper
 		  triangular system*/
