@@ -47,6 +47,9 @@ public:
     std::vector<int> col_first;	///<On iteration k, first[i] gives the number of non-zero elements on col i of A before A(i, k).
     
 	block_diag_matrix<el_type> S; ///<A diagonal scaling matrix S such that SAS will be equilibriated in the max-norm (i.e. every row/column has norm 1). S is constructed after running the sym_equil() function, after which SAS will be stored in place of A.
+
+
+  bool ildl_success;
     
     //-------------- types of pivoting procedures ----------------//
     /*! A simple enum class for listing the type of pivoting procedure SYM-ILDL uses.
@@ -68,6 +71,7 @@ public:
 	{
 		m_x.reserve(n_cols);
 		m_idx.reserve(n_cols);
+		ildl_success = false;
 	}
 	
 	//----Matrix referencing/filling----//

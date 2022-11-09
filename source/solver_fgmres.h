@@ -142,7 +142,7 @@ void solver<el_type, mat_type> :: fgmres(int max_iter, int kdim, double tol) {
 			/*-------------------- end [inner] while loop [Arnoldi] */
 			printf("iter %d, relative residual %e.\n", its, beta/norm_rhs);
 			/* printf("iter %d, beta %e, norm %e.\n", its, beta, norm_rhs); */
-			if(!isfinite(beta/norm_rhs))
+			if(!std::isfinite(beta/norm_rhs))
 			  {
 			    return;
 			  }

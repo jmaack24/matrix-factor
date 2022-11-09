@@ -323,9 +323,9 @@ class solver {
 
 			start = clock();
             if (perform_inplace) {
-                A.ildl_inplace(D, perm, fill_factor, tol, pp_tol, piv_type);
+	      A.ildl_inplace(D, perm, fill_factor, tol, pp_tol, piv_type);
             } else {
-                A.ildl(L, D, perm, fill_factor, tol, pp_tol, piv_type);
+	      A.ildl(L, D, perm, fill_factor, tol, pp_tol, piv_type);
             }
 			dif = clock() - start; total += dif;
 			
@@ -347,6 +347,11 @@ class solver {
             }
 			if (msg_lvl) printf("\n");
 			fflush(stdout);
+
+			if (!A.ildl_success)
+			  {
+			    exit(-1);
+			  }
 			
 			// if there is a right hand side, it means the user wants a solve.
 			// TODO: refactor this solve to be in its own method, and separate 

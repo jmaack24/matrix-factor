@@ -365,28 +365,40 @@ void lilc_matrix<el_type> :: ildl(lilc_matrix<el_type>& L, block_diag_matrix<el_
 		L.m_x[k][0] = 1;
 		L.m_idx[k][0] = k;
 		count++;
-		
-		if (!size_two_piv) {
-		  // double EPS = 1.e-16;
-			if ( abs(D[k]) < eps) D[k] = eps; //statically pivot
-			i = 1;
-			for (idx_it it = curr_nnzs.begin(); it != curr_nnzs.end(); it++) { 
-				if ( abs(work[*it]) > eps) {
-					L.m_idx[k][i] = *it; //col k nonzero indices of L are stored
-					L.m_x[k][i] = work[*it]/D[k]; //col k nonzero values of L are stored
 
-					L.list[*it].push_back(k); //update Llist
-					count++;
-					i++;
-				}
-			}
+		if (!std::isfinite(D[k]))
+		  {
+		    std::cout << "Non-finite value on diagonal. Index: " << k << std::endl;
+		    ildl_success = false;
+		    return;
+		  }
+
+		if (!size_two_piv)
+		  {
+		    // double EPS = eps;
+		    if ( abs(D[k]) < eps) D[k] = eps; //statically pivot
+		    i = 1;
+		    for (idx_it it = curr_nnzs.begin(); it != curr_nnzs.end(); it++)
+		      {
+			if ( abs(work[*it]) > eps)
+			  {
+			    L.m_idx[k][i] = *it; //col k nonzero indices of L are stored
+			    L.m_x[k][i] = work[*it]/D[k]; //col k nonzero values of L are stored
+
+			    L.list[*it].push_back(k); //update Llist
+			    count++;
+			    i++;
+			  }
+		      }
 			
-			col_size = i;
-			
-			//advance list and L.first
-			L.advance_first(k);
-			advance_list(k);
-		} else {
+		    col_size = i;
+
+		    //advance list and L.first
+		    L.advance_first(k);
+		    advance_list(k);
+		  }
+		else
+		  {
 			//resize k+1th column of L to proper size.
 			L.m_idx[k+1].resize(temp_nnzs.size()+1);
 			L.m_x[k+1].resize(temp_nnzs.size()+1);
@@ -467,6 +479,9 @@ void lilc_matrix<el_type> :: ildl(lilc_matrix<el_type>& L, block_diag_matrix<el_
 
 	//assign number of non-zeros in L to L.nnz_count
 	L.nnz_count = count;
+	ildl_success = true;
+
+	return;
 
 }
 
